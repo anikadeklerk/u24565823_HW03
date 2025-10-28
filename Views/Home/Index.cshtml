@@ -35,12 +35,14 @@
         <table class="table table-sm table-striped">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Active</th>
+                    <th>Product</th>
+                    <th>Brand</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Image</th>
                 </tr>
             </thead>
+
             <tbody>
                 @foreach (var s in Model.Staff)
                 {
@@ -107,13 +109,24 @@
             <tbody>
                 @foreach (var p in Model.Products)
                 {
+                    var brand = p.brand?.brand_name ?? "default";
+                    var safe = System.Text.RegularExpressions.Regex.Replace(brand, @"[^\w\-]", "");
+                    var img = Url.Content($"~/Bikes-Images/{safe}_bike.jpeg");
+
                     <tr>
                         <td>@p.product_name</td>
                         <td>@p.brand.brand_name</td>
                         <td>@p.category.category_name</td>
                         <td>@p.list_price.ToString("C")</td>
+                        <td>
+                            <img src="@img"
+                                 alt="@brand"
+                                 style="height:60px;width:auto"
+                                 onerror="this.src='@Url.Content("~/Bikes-Images/default.jpg")'" />
+                        </td>
                     </tr>
                 }
+
             </tbody>
         </table>
         <div class="d-flex gap-1">
