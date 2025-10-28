@@ -1,33 +1,183 @@
-﻿@{
-    ViewBag.Title = "Home Page";
+﻿@model BikeStores_MVC.Models.HomePageVM
+@{
+    ViewBag.Title = "Home";
 }
 
-<main>
-    <section class="row" aria-labelledby="aspnetTitle">
-        <h1 id="title">ASP.NET</h1>
-        <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-        <p><a href="https://asp.net" class="btn btn-primary btn-md">Learn more &raquo;</a></p>
-    </section>
+<h2 class="mt-3">Dashboard</h2>
 
-    <div class="row">
-        <section class="col-md-4" aria-labelledby="gettingStartedTitle">
-            <h2 id="gettingStartedTitle">Getting started</h2>
-            <p>
-                ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-                enables a clean separation of concerns and gives you full control over markup
-                for enjoyable, agile development.
-            </p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="librariesTitle">
-            <h2 id="librariesTitle">Get more libraries</h2>
-            <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-        </section>
-        <section class="col-md-4" aria-labelledby="hostingTitle">
-            <h2 id="hostingTitle">Web Hosting</h2>
-            <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-            <p><a class="btn btn-outline-dark" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-        </section>
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<!-- Filter bar for Products (no AJAX, GET form) -->
+@using (Html.BeginForm("Index", "Home", FormMethod.Get, new { @class = "row g-2 mb-3" }))
+{
+    <div class="col-auto">
+        @Html.DropDownListFor(m => m.BrandId, Model.BrandList, "-- Brand --", new { @class = "form-select" })
     </div>
-</main>
+    <div class="col-auto">
+        @Html.DropDownListFor(m => m.CategoryId, Model.CategoryList, "-- Category --", new { @class = "form-select" })
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Filter Products</button>
+        <a href="@Url.Action("Index","Home")" class="btn btn-outline-secondary">Clear</a>
+    </div>
+}
+
+<div class="row">
+    <!-- Staff section -->
+    <div class="col-lg-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4>Staff</h4>
+            <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#createStaffModal">Create Staff</button>
+        </div>
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Active</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model.Staff)
+                {
+                    <tr>
+                        <td>@(s.first_name + " " + s.last_name)</td>
+                        <td>@s.email</td>
+                        <td>@s.phone</td>
+                        <td>@(s.active == 1 ? "Yes" : "No")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="d-flex gap-1">
+            <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("Index","Home", new { staffPage = Math.Max(1, Model.StaffPage-1), custPage = Model.CustPage, prodPage = Model.ProdPage, brandId = Model.BrandId, categoryId = Model.CategoryId })">Prev</a>
+            <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("Index","Home", new { staffPage = Model.StaffPage+1, custPage = Model.CustPage, prodPage = Model.ProdPage, brandId = Model.BrandId, categoryId = Model.CategoryId })">Next</a>
+        </div>
+    </div>
+
+    <!-- Customers section -->
+    <div class="col-lg-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4>Customers</h4>
+            <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#createCustomerModal">Create Customer</button>
+        </div>
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>City</th>
+                    <th>State</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.Customers)
+                {
+                    <tr>
+                        <td>@(c.first_name + " " + c.last_name)</td>
+                        <td>@c.email</td>
+                        <td>@c.city</td>
+                        <td>@c.state</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="d-flex gap-1">
+            <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("Index","Home", new { custPage = Math.Max(1, Model.CustPage-1), staffPage = Model.StaffPage, prodPage = Model.ProdPage, brandId = Model.BrandId, categoryId = Model.CategoryId })">Prev</a>
+            <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("Index","Home", new { custPage = Model.CustPage+1, staffPage = Model.StaffPage, prodPage = Model.ProdPage, brandId = Model.BrandId, categoryId = Model.CategoryId })">Next</a>
+        </div>
+    </div>
+
+    <!-- Products section -->
+    <div class="col-lg-4">
+        <h4>Products</h4>
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Brand</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.Products)
+                {
+                    <tr>
+                        <td>@p.product_name</td>
+                        <td>@p.brand.brand_name</td>
+                        <td>@p.category.category_name</td>
+                        <td>@p.list_price.ToString("C")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="d-flex gap-1">
+            <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("Index","Home", new { prodPage = Math.Max(1, Model.ProdPage-1), staffPage = Model.StaffPage, custPage = Model.CustPage, brandId = Model.BrandId, categoryId = Model.CategoryId })">Prev</a>
+            <a class="btn btn-outline-secondary btn-sm" href="@Url.Action("Index","Home", new { prodPage = Model.ProdPage+1, staffPage = Model.StaffPage, custPage = Model.CustPage, brandId = Model.BrandId, categoryId = Model.CategoryId })">Next</a>
+        </div>
+    </div>
+</div>
+
+<!-- Create Staff MODAL (no AJAX; standard POST to Staffs/Create) -->
+<div class="modal fade" id="createStaffModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("Create", "Staffs", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Staff</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">@Html.Label("First name") @Html.TextBox("first_name", null, new { @class = "form-control", required = "required" })</div>
+                    <div class="mb-2">@Html.Label("Last name")  @Html.TextBox("last_name", null, new { @class = "form-control", required = "required" })</div>
+                    <div class="mb-2">@Html.Label("Email")      @Html.TextBox("email", null, new { @class = "form-control", type = "email" })</div>
+                    <div class="mb-2">@Html.Label("Phone")      @Html.TextBox("phone", null, new { @class = "form-control" })</div>
+                    <div class="mb-2">@Html.Label("Active")     @Html.TextBox("active", "1", new { @class = "form-control" })</div>
+                    <div class="mb-2">@Html.Label("Store")      @Html.TextBox("store_id", null, new { @class = "form-control" })</div>
+                    <div class="mb-2">@Html.Label("Manager")    @Html.TextBox("manager_id", null, new { @class = "form-control" })</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Create Customer MODAL (no AJAX; standard POST to Customers/Create) -->
+<div class="modal fade" id="createCustomerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("Create", "Customers", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Customer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">@Html.Label("First name") @Html.TextBox("first_name", null, new { @class = "form-control", required = "required" })</div>
+                    <div class="mb-2">@Html.Label("Last name")  @Html.TextBox("last_name", null, new { @class = "form-control", required = "required" })</div>
+                    <div class="mb-2">@Html.Label("Email")      @Html.TextBox("email", null, new { @class = "form-control", type = "email" })</div>
+                    <div class="mb-2">@Html.Label("Phone")      @Html.TextBox("phone", null, new { @class = "form-control" })</div>
+                    <div class="mb-2">@Html.Label("Street")     @Html.TextBox("street", null, new { @class = "form-control" })</div>
+                    <div class="mb-2">@Html.Label("City")       @Html.TextBox("city", null, new { @class = "form-control" })</div>
+                    <div class="mb-2">@Html.Label("State")      @Html.TextBox("state", null, new { @class = "form-control" })</div>
+                    <div class="mb-2">@Html.Label("Zip")        @Html.TextBox("zip_code", null, new { @class = "form-control" })</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
